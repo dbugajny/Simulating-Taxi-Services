@@ -13,9 +13,7 @@ class Customer:
     def __init__(self, current_vertex: str, destination_vertex: str):
         self.status: CustomerStatus = CustomerStatus.NO_TAXI
         self.assigned_taxi: Optional[str] = None
-
         self.current_vertex: str = current_vertex
         self.destination_vertex: str = destination_vertex
-
         self.pickup_path: Optional[list[str]] = None
         self.destination_path: Optional[list[str]] = None

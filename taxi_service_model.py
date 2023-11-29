@@ -5,22 +5,22 @@ from taxi_model import Taxi, TaxiStatus
 
 INITIAL_FEE = 5
 LENGTH_FEE = 2
+N_TAXIS = 3
+N_CUSTOMERS = 5
 
 
 class TaxiService:
-    def __init__(self, graph):
+    def __init__(self, city_plan):
         self.customers: list[Customer] = []
-        self.graph = graph
-
+        self.city_plan: dict[str, list[str]] = city_plan
         self.taxis: dict[str, Taxi] = {}
-        self.taxis_in_vertices = {k: [] for k in graph.keys()}
-
+        self.taxis_in_vertices = {k: [] for k in city_plan.keys()}
         self.new_taxi_key: int = 1
 
-        for i in range(3):
+        for i in range(N_TAXIS):
             self.generate_new_taxi()
 
-        for i in range(5):
+        for i in range(N_CUSTOMERS):
             self._generate_new_customer()
 
     def assign_taxi_to_customer(self):
@@ -39,14 +39,13 @@ class TaxiService:
                 return
 
     @staticmethod
-    def _create_path(cur_ver, predecessors):
+    def _create_path(current_vertex, predecessors):
         path = []
+        vertex = predecessors[current_vertex]
 
-        res = predecessors[cur_ver]
-
-        while res:
-            path.append(res)
-            res = predecessors[res]
+        while vertex:
+            path.append(vertex)
+            vertex = predecessors[vertex]
 
         return path
 
@@ -54,41 +53,42 @@ class TaxiService:
         predecessors = {customer_vertex: None}
         visited = {customer_vertex}
         queue = [customer_vertex]
-        while queue:
-            cur_ver = queue.pop(0)
-            for taxi in self.taxis_in_vertices[cur_ver]:
-                if self.taxis[taxi].status == TaxiStatus.FREE:
-                    path = self._create_path(cur_ver, predecessors)
 
+        while queue:
+            processed_vertex = queue.pop(0)
+            for taxi in self.taxis_in_vertices[processed_vertex]:
+                if self.taxis[taxi].status == TaxiStatus.FREE:
+                    path = self._create_path(processed_vertex, predecessors)
                     return taxi, path
-            for ver_edg in self.graph[cur_ver]:
-                if ver_edg not in visited:
-                    visited.add(ver_edg)
-                    queue.append(ver_edg)
-                    predecessors[ver_edg] = cur_ver
+
+            for neighbour_vertex in self.city_plan[processed_vertex]:
+                if neighbour_vertex not in visited:
+                    visited.add(neighbour_vertex)
+                    queue.append(neighbour_vertex)
+                    predecessors[neighbour_vertex] = processed_vertex
         return None, None
 
     def find_destination_path(self, customer_vertex, destination_vertex):
         predecessors = {destination_vertex: None}
         visited = {destination_vertex}
         queue = [destination_vertex]
-        while queue:
-            cur_ver = queue.pop(0)
-            if cur_ver == customer_vertex:
-                path = self._create_path(cur_ver, predecessors)
 
+        while queue:
+            processed_vertex = queue.pop(0)
+            if processed_vertex == customer_vertex:
+                path = self._create_path(processed_vertex, predecessors)
                 return path
 
-            for ver_edg in self.graph[cur_ver]:
-                if ver_edg not in visited:
-                    visited.add(ver_edg)
-                    queue.append(ver_edg)
-                    predecessors[ver_edg] = cur_ver
+            for neighbour_vertex in self.city_plan[processed_vertex]:
+                if neighbour_vertex not in visited:
+                    visited.add(neighbour_vertex)
+                    queue.append(neighbour_vertex)
+                    predecessors[neighbour_vertex] = processed_vertex
 
         return None
 
     def generate_new_taxi(self):
-        possible_lst = list(self.graph.keys())
+        possible_lst = list(self.city_plan.keys())
         current_vertex = np.random.choice(possible_lst)
 
         new_key = str(self.new_taxi_key)
@@ -98,7 +98,7 @@ class TaxiService:
         self.taxis_in_vertices[current_vertex].append(new_key)
 
     def _generate_new_customer(self):
-        possible_lst = list(self.graph.keys())
+        possible_lst = list(self.city_plan.keys())
         current_vertex = np.random.choice(possible_lst)
         possible_lst.remove(current_vertex)
         destination_vertex = np.random.choice(possible_lst)
@@ -117,29 +117,31 @@ class TaxiService:
 
     def _process_customer_waiting(self, customer):
         if customer.pickup_path:
-            cur_ver = self.taxis[customer.assigned_taxi].current_vertex
-            new_ver = customer.pickup_path.pop(0)
+            current_vertex = self.taxis[customer.assigned_taxi].current_vertex
+            new_vertex = customer.pickup_path.pop(0)
 
-            self.taxis_in_vertices[cur_ver].remove(customer.assigned_taxi)
-            self.taxis_in_vertices[new_ver].append(customer.assigned_taxi)
+            self.taxis_in_vertices[current_vertex].remove(customer.assigned_taxi)
+            self.taxis_in_vertices[new_vertex].append(customer.assigned_taxi)
 
-            self.taxis[customer.assigned_taxi].current_vertex = new_ver
+            self.taxis[customer.assigned_taxi].current_vertex = new_vertex
             self.taxis[customer.assigned_taxi].total_distance += 1
+
         else:
             customer.status = CustomerStatus.INSIDE
 
     def _process_customer_inside(self, customer):
         if customer.destination_path:
-            cur_ver = self.taxis[customer.assigned_taxi].current_vertex
-            new_ver = customer.destination_path.pop(0)
+            current_vertex = self.taxis[customer.assigned_taxi].current_vertex
+            new_vertex = customer.destination_path.pop(0)
 
-            self.taxis_in_vertices[cur_ver].remove(customer.assigned_taxi)
-            self.taxis_in_vertices[new_ver].append(customer.assigned_taxi)
+            self.taxis_in_vertices[current_vertex].remove(customer.assigned_taxi)
+            self.taxis_in_vertices[new_vertex].append(customer.assigned_taxi)
 
-            customer.current_vertex = new_ver
-            self.taxis[customer.assigned_taxi].current_vertex = new_ver
+            customer.current_vertex = new_vertex
+            self.taxis[customer.assigned_taxi].current_vertex = new_vertex
             self.taxis[customer.assigned_taxi].total_distance += 1
             self.taxis[customer.assigned_taxi].total_income += LENGTH_FEE
+
         else:
             customer.status = CustomerStatus.END
 
