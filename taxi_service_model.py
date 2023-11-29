@@ -14,7 +14,7 @@ class TaxiService:
 
         self.taxis: dict[str, Taxi] = {}
         self.taxis_in_vertices = {k: [] for k in graph.keys()}
-        self.customers_in_vertices = {k: [] for k in graph.keys()}
+
         self.new_taxi_key: int = 1
 
         for i in range(3):
@@ -117,7 +117,12 @@ class TaxiService:
 
     def _process_customer_waiting(self, customer):
         if customer.pickup_path:
+            cur_ver = self.taxis[customer.assigned_taxi].current_vertex
             new_ver = customer.pickup_path.pop(0)
+
+            self.taxis_in_vertices[cur_ver].remove(customer.assigned_taxi)
+            self.taxis_in_vertices[new_ver].append(customer.assigned_taxi)
+
             self.taxis[customer.assigned_taxi].current_vertex = new_ver
             self.taxis[customer.assigned_taxi].total_distance += 1
         else:
@@ -125,7 +130,12 @@ class TaxiService:
 
     def _process_customer_inside(self, customer):
         if customer.destination_path:
+            cur_ver = self.taxis[customer.assigned_taxi].current_vertex
             new_ver = customer.destination_path.pop(0)
+
+            self.taxis_in_vertices[cur_ver].remove(customer.assigned_taxi)
+            self.taxis_in_vertices[new_ver].append(customer.assigned_taxi)
+
             customer.current_vertex = new_ver
             self.taxis[customer.assigned_taxi].current_vertex = new_ver
             self.taxis[customer.assigned_taxi].total_distance += 1
