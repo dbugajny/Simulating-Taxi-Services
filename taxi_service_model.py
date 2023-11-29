@@ -15,11 +15,12 @@ class TaxiService:
         self.taxis: dict[str, Taxi] = {}
         self.taxis_in_vertices = {k: [] for k in graph.keys()}
         self.customers_in_vertices = {k: [] for k in graph.keys()}
+        self.new_taxi_key: int = 1
 
-        for i in range(1):
+        for i in range(3):
             self.generate_new_taxi()
 
-        for i in range(1):
+        for i in range(5):
             self._generate_new_customer()
 
     def assign_taxi_to_customer(self):
@@ -90,10 +91,8 @@ class TaxiService:
         possible_lst = list(self.graph.keys())
         current_vertex = np.random.choice(possible_lst)
 
-        if not self.taxis:
-            new_key = "11111"
-        else:
-            new_key = str(int(max(self.taxis.keys())) + 1)
+        new_key = str(self.new_taxi_key)
+        self.new_taxi_key += 1
 
         self.taxis[new_key] = Taxi(current_vertex)
         self.taxis_in_vertices[current_vertex].append(new_key)
@@ -135,7 +134,6 @@ class TaxiService:
             customer.status = CustomerStatus.END
 
     def make_step(self):
-        # generate new customers
         self.generate_new_customers()
         self.assign_taxi_to_customer()
 
