@@ -1,6 +1,7 @@
-from taxi_model import Taxi, TaxiStatus
-from customer_model import Customer, CustomerStatus
 import numpy as np
+
+from customer_model import Customer, CustomerStatus
+from taxi_model import Taxi, TaxiStatus
 
 INITIAL_FEE = 5
 LENGTH_FEE = 2
@@ -12,8 +13,7 @@ class TaxiService:
         self.graph = graph
 
         self.taxis: dict[str, Taxi] = {}
-        self.taxis_in_vertices = {k: [] for k in
-                                  graph.keys()}  # all vertices with current taxis, need to check if there are free taxis
+        self.taxis_in_vertices = {k: [] for k in graph.keys()}
         self.customers_in_vertices = {k: [] for k in graph.keys()}
 
         for i in range(1):
@@ -37,7 +37,8 @@ class TaxiService:
             else:
                 return
 
-    def _create_path(self, cur_ver, predecessors):
+    @staticmethod
+    def _create_path(cur_ver, predecessors):
         path = []
 
         res = predecessors[cur_ver]
