@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 
 from customer_model import Customer, CustomerStatus
@@ -6,7 +8,13 @@ from taxi_model import Taxi, TaxiStatus
 INITIAL_FEE = 5
 LENGTH_FEE = 2
 N_TAXIS = 3
-N_CUSTOMERS = 5
+
+CUSTOMER_PROBA_LST = [
+    0.35, 0.18, 0.10, 0.05, 0.03, 0.03,
+    0.13, 0.38, 0.55, 0.56, 0.52, 0.57,
+    0.63, 0.62, 0.67, 0.63, 0.50, 0.71,
+    1.00, 0.99, 0.86, 0.86, 0.79, 0.59
+]
 
 
 class TaxiService:
@@ -16,12 +24,10 @@ class TaxiService:
         self.taxis: dict[str, Taxi] = {}
         self.taxis_in_vertices = {k: [] for k in city_plan.keys()}
         self.new_taxi_key: int = 1
+        self.time = [0, 0]
 
         for i in range(N_TAXIS):
             self.generate_new_taxi()
-
-        for i in range(N_CUSTOMERS):
-            self._generate_new_customer()
 
     def assign_taxi_to_customer(self):
         for customer in self.customers:
@@ -109,10 +115,8 @@ class TaxiService:
         self.customers.append(customer)
 
     def generate_new_customers(self):
-        customer_proba = [0.99, 0.005, 0.005]
-        n_new_customers = np.random.choice(list(range(len(customer_proba))), p=customer_proba)
-
-        for _ in range(n_new_customers):
+        # customer_proba = [0.99, 0.005, 0.005]
+        if random.uniform(0, 1) < CUSTOMER_PROBA_LST[self.time[0]]:
             self._generate_new_customer()
 
     def _process_customer_waiting(self, customer):
@@ -162,3 +166,15 @@ class TaxiService:
 
         for i in customers_to_delete[::-1]:
             del self.customers[i]
+
+        self.update_time()
+
+    def update_time(self):
+        self.time[1] += 1
+
+        if self.time[1] == 60:
+            self.time[1] = 0
+            self.time[0] += 1
+
+            if self.time[0] == 24:
+                self.time[0] = 0
