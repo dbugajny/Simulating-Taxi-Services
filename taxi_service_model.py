@@ -26,7 +26,6 @@ class TaxiService:
         self.customers: list[Customer] = []
         self.city_plan: dict[str, list[str]] = city_plan
         self.taxis: dict[str, Taxi] = {}
-        self.n_active_taxis = 0
         self.taxis_in_vertices = {k: [] for k in city_plan.keys()}
         self.new_taxi_key: int = 1
         self.time = [0, 0, 0]
@@ -100,7 +99,7 @@ class TaxiService:
         return None
 
     def generate_new_taxi(self):
-        if len(self.customers) / max(self.n_active_taxis, 1) < CUSTOMERS_TO_TAXIS_RATIO:
+        if len(self.customers) / max(len(self.taxis), 1) < CUSTOMERS_TO_TAXIS_RATIO:
             return
 
         possible_lst = list(self.city_plan.keys())
@@ -111,7 +110,6 @@ class TaxiService:
 
         self.taxis[new_key] = Taxi(current_vertex)
         self.taxis_in_vertices[current_vertex].append(new_key)
-        self.n_active_taxis += 1
 
     def _generate_new_customer(self):
         possible_lst = list(self.city_plan.keys())
@@ -125,13 +123,12 @@ class TaxiService:
         self.customers.append(customer)
 
     def generate_new_customers(self):
-        # customer_proba = [0.99, 0.005, 0.005]
         if random.uniform(0, 1) < CUSTOMER_PROBA_LST[self.time[0]]:
             self._generate_new_customer()
 
     def _process_customer_waiting(self, customer):
         if customer.pickup_path:
-            customer.waiting_time += 15
+            customer.waiting_time += TIME_RATE
 
             current_vertex = self.taxis[customer.assigned_taxi].current_vertex
             new_vertex = customer.pickup_path.pop(0)
@@ -172,6 +169,8 @@ class TaxiService:
         for taxi_to_del in taxis_to_del:
             self.income_counter[self.taxis[taxi_to_del].total_income] += 1
             self.distance_counter[self.taxis[taxi_to_del].total_distance] += 1
+            self.taxis_in_vertices[self.taxis[taxi_to_del].current_vertex].remove(taxi_to_del)
+
             del self.taxis[taxi_to_del]
 
     def make_step(self):
