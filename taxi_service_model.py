@@ -9,9 +9,9 @@ INITIAL_FEE = 5
 LENGTH_FEE = 2
 N_TAXIS = 3
 TIME_RATE = 15  # in seconds
-MAX_TAXI_WORKING_TIME = 8 * 60 * 24
+MAX_TAXI_WORKING_TIME = 8 * 24 * 60 * TIME_RATE
 
-CUSTOMERS_TO_TAXIS_RATIO = 1
+CUSTOMERS_TO_TAXIS_RATIO = 3
 
 CUSTOMER_PROBA_LST = [
     0.09, 0.05, 0.02, 0.01, 0.01, 0.01, 0.03, 0.09, 0.14, 0.14,
@@ -159,7 +159,7 @@ class TaxiService:
 
     def process_taxis(self):
         taxis_to_del = []
-        for key, taxi in self.taxis.values():
+        for key, taxi in self.taxis.items():
             taxi.working_time += TIME_RATE
 
             if taxi.status == TaxiStatus.FREE and taxi.working_time >= MAX_TAXI_WORKING_TIME:
