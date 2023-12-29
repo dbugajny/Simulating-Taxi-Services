@@ -1,4 +1,5 @@
 import random
+from collections import defaultdict
 
 import numpy as np
 
@@ -9,7 +10,7 @@ INITIAL_FEE = 5
 LENGTH_FEE = 2
 N_TAXIS = 3
 TIME_RATE = 15  # in seconds
-MAX_TAXI_WORKING_TIME = 8 * 24 * 60 * TIME_RATE
+MAX_TAXI_WORKING_TIME = 8 * 60 * TIME_RATE
 
 CUSTOMERS_TO_TAXIS_RATIO = 3
 
@@ -29,6 +30,9 @@ class TaxiService:
         self.taxis_in_vertices = {k: [] for k in city_plan.keys()}
         self.new_taxi_key: int = 1
         self.time = [0, 0, 0]
+        self.waiting_time_counter = defaultdict(int)
+        self.income_counter = defaultdict(int)
+        self.distance_counter = defaultdict(int)
 
     def assign_taxis_to_customers(self):
         for customer in self.customers:
@@ -166,6 +170,8 @@ class TaxiService:
                 taxis_to_del.append(key)
 
         for taxi_to_del in taxis_to_del:
+            self.income_counter[self.taxis[taxi_to_del].total_income] += 1
+            self.distance_counter[self.taxis[taxi_to_del].total_distance] += 1
             del self.taxis[taxi_to_del]
 
     def make_step(self):
@@ -185,6 +191,7 @@ class TaxiService:
                 customers_to_delete.append(i)
 
         for i in customers_to_delete[::-1]:
+            self.waiting_time_counter[self.customers[i].waiting_time] += 1
             del self.customers[i]
 
         self.update_time()
