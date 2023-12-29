@@ -10,12 +10,10 @@ LENGTH_FEE = 2
 N_TAXIS = 3
 
 CUSTOMER_PROBA_LST = [
-    0.35, 0.18, 0.10, 0.05, 0.03, 0.03,
-    0.13, 0.38, 0.55, 0.56, 0.52, 0.57,
-    0.63, 0.62, 0.67, 0.63, 0.50, 0.71,
-    1.00, 0.99, 0.86, 0.86, 0.79, 0.59
+    0.09, 0.05, 0.02, 0.01, 0.01, 0.01, 0.03, 0.09, 0.14, 0.14,
+    0.13, 0.14, 0.16, 0.16, 0.17, 0.16, 0.13, 0.18, 0.25, 0.25,
+    0.22, 0.22, 0.2, 0.15
 ]
-
 
 class TaxiService:
     def __init__(self, city_plan):
@@ -24,7 +22,7 @@ class TaxiService:
         self.taxis: dict[str, Taxi] = {}
         self.taxis_in_vertices = {k: [] for k in city_plan.keys()}
         self.new_taxi_key: int = 1
-        self.time = [0, 0]
+        self.time = [0, 0, 0]
 
         for i in range(N_TAXIS):
             self.generate_new_taxi()
@@ -173,11 +171,15 @@ class TaxiService:
         self.update_time()
 
     def update_time(self):
-        self.time[1] += 1
+        self.time[2] += 15
 
-        if self.time[1] == 60:
-            self.time[1] = 0
-            self.time[0] += 1
+        if self.time[2] == 60:
+            self.time[2] = 0
+            self.time[1] += 1
 
-            if self.time[0] == 24:
-                self.time[0] = 0
+            if self.time[1] == 60:
+                self.time[1] = 0
+                self.time[0] += 1
+
+                if self.time[0] == 24:
+                    self.time[0] = 0
