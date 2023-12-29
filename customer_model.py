@@ -17,3 +17,4 @@ class Customer:
         self.destination_vertex: str = destination_vertex
         self.pickup_path: Optional[list[str]] = None
         self.destination_path: Optional[list[str]] = None
+        self.waiting_time = 0

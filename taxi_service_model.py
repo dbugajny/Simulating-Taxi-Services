@@ -29,7 +29,7 @@ class TaxiService:
         for i in range(N_TAXIS):
             self.generate_new_taxi()
 
-    def assign_taxi_to_customer(self):
+    def assign_taxis_to_customers(self):
         for customer in self.customers:
             if customer.status != CustomerStatus.NO_TAXI:
                 continue
@@ -38,11 +38,12 @@ class TaxiService:
                 customer.assigned_taxi = taxi_id
                 customer.pickup_path = pickup_path
                 customer.status = CustomerStatus.WAITING
+
                 self.taxis[taxi_id].status = TaxiStatus.GOING_TO_CUSTOMER
                 self.taxis[taxi_id].n_customers_delivered += 1
                 self.taxis[taxi_id].total_income += INITIAL_FEE
             else:
-                return
+                customer.waiting_time += 1
 
     @staticmethod
     def _create_path(current_vertex, predecessors):
@@ -121,6 +122,8 @@ class TaxiService:
 
     def _process_customer_waiting(self, customer):
         if customer.pickup_path:
+            customer.waiting_time += 1
+
             current_vertex = self.taxis[customer.assigned_taxi].current_vertex
             new_vertex = customer.pickup_path.pop(0)
 
@@ -151,7 +154,7 @@ class TaxiService:
 
     def make_step(self):
         self.generate_new_customers()
-        self.assign_taxi_to_customer()
+        self.assign_taxis_to_customers()
 
         customers_to_delete = []
 
