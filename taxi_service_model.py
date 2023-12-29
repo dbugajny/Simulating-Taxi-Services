@@ -15,6 +15,7 @@ CUSTOMER_PROBA_LST = [
     0.22, 0.22, 0.2, 0.15
 ]
 
+
 class TaxiService:
     def __init__(self, city_plan):
         self.customers: list[Customer] = []
