@@ -33,6 +33,7 @@ class TaxiService:
         self.full_waiting_time_counter = defaultdict(int)
         self.income_counter = defaultdict(int)
         self.distance_counter = defaultdict(int)
+        self.n_customers_delivered_counter = defaultdict(int)
 
     def assign_taxis_to_customers(self):
         for customer in self.customers:
@@ -171,6 +172,7 @@ class TaxiService:
         for taxi_to_del in taxis_to_del:
             self.income_counter[self.taxis[taxi_to_del].total_income] += 1
             self.distance_counter[self.taxis[taxi_to_del].total_distance] += 1
+            self.n_customers_delivered_counter[self.taxis[taxi_to_del].n_customers_delivered] += 1
             self.taxis_in_vertices[self.taxis[taxi_to_del].current_vertex].remove(taxi_to_del)
 
             del self.taxis[taxi_to_del]
