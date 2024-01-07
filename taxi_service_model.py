@@ -30,6 +30,7 @@ class TaxiService:
         self.new_taxi_key: int = 1
         self.time = [0, 0, 0]
         self.waiting_time_counter = defaultdict(int)
+        self.full_waiting_time_counter = defaultdict(int)
         self.income_counter = defaultdict(int)
         self.distance_counter = defaultdict(int)
 
@@ -47,7 +48,8 @@ class TaxiService:
                 self.taxis[taxi_id].n_customers_delivered += 1
                 self.taxis[taxi_id].total_income += INITIAL_FEE
             else:
-                customer.waiting_time += 15
+                customer.waiting_time += TIME_RATE
+                customer.full_waiting_time += TIME_RATE
 
     @staticmethod
     def _create_path(current_vertex, predecessors):
@@ -128,7 +130,7 @@ class TaxiService:
 
     def _process_customer_waiting(self, customer):
         if customer.pickup_path:
-            customer.waiting_time += TIME_RATE
+            customer.full_waiting_time += TIME_RATE
 
             current_vertex = self.taxis[customer.assigned_taxi].current_vertex
             new_vertex = customer.pickup_path.pop(0)
@@ -191,6 +193,7 @@ class TaxiService:
 
         for i in customers_to_delete[::-1]:
             self.waiting_time_counter[self.customers[i].waiting_time] += 1
+            self.full_waiting_time_counter[self.customers[i].full_waiting_time] += 1
             del self.customers[i]
 
         self.update_time()

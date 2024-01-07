@@ -18,3 +18,4 @@ class Customer:
         self.pickup_path: Optional[list[str]] = None
         self.destination_path: Optional[list[str]] = None
         self.waiting_time = 0
+        self.full_waiting_time = 0
